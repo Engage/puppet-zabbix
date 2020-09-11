@@ -81,7 +81,7 @@
 #
 # [*enableremotecommands*]
 #   Whether remote commands from zabbix server are allowed.
-#   Depreciated on zabbix 5. Use allow
+#   Depreciated on zabbix 5. See allowkey/denykey below.
 #
 # [*allowkey*]
 #   Allow execution of those item keys that match a pattern.
