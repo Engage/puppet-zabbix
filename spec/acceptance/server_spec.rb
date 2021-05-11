@@ -15,18 +15,12 @@ describe 'zabbix::server class' do
 
       # this will actually deploy apache + postgres + zabbix-server + zabbix-web
       pp = <<-EOS
-        class { 'postgresql::globals':
-          encoding => 'UTF-8',
-          locale   => 'en_US.UTF-8',
-          manage_package_repo => true,
-          version => '12',
-        }
-        -> class { 'postgresql::server': }
-        -> class { 'zabbix::database': }
-        -> class { 'zabbix::server': }
+        class { 'postgresql::server': } ->
+        class { 'zabbix::database': } ->
+        class { 'zabbix::server': }
       EOS
 
-      prepare_host
+      cleanup_zabbix
 
       # Run it twice and test for idempotency
       apply_manifest(pp, catch_failures: true)

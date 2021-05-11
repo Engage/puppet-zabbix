@@ -25,6 +25,7 @@ describe 'zabbix::proxy' do
         let :params do
           {
             zabbix_server_host: '192.168.1.1',
+            zabbix_version: '2.4'
           }
         end
 
@@ -44,22 +45,23 @@ describe 'zabbix::proxy' do
             }
           end
 
-          it { is_expected.to contain_class('zabbix::repo').with_zabbix_version('5.0') }
+          it { is_expected.to contain_class('zabbix::repo').with_zabbix_version('3.4') }
           it { is_expected.to contain_package('zabbix-proxy-pgsql').with_require('Class[Zabbix::Repo]') }
           it { is_expected.to contain_yumrepo('zabbix-nonsupported') }
           it { is_expected.to contain_yumrepo('zabbix') }
         end
 
-        describe 'when manage_repo is true and zabbix version is 4.0' do
+        describe 'when manage_repo is true and zabbix version is 2.4' do
           let :params do
             {
               manage_repo: true,
-              zabbix_version: '4.0'
+              zabbix_version: '2.4'
             }
           end
 
-          it { is_expected.to contain_class('zabbix::repo').with_zabbix_version('4.0') }
+          it { is_expected.to contain_class('zabbix::repo').with_zabbix_version('2.4') }
           it { is_expected.to contain_package('zabbix-proxy-pgsql').with_require('Class[Zabbix::Repo]') }
+          it { is_expected.to contain_package('zabbix-proxy').with_ensure('present') }
         end
 
         describe 'with enabled selinux' do
@@ -115,7 +117,7 @@ describe 'zabbix::proxy' do
           end
 
           it { is_expected.to contain_class('zabbix::database::postgresql').with_zabbix_type('proxy') }
-          it { is_expected.to contain_class('zabbix::database::postgresql').with_zabbix_version('5.0') }
+          it { is_expected.to contain_class('zabbix::database::postgresql').with_zabbix_version('3.4') }
           it { is_expected.to contain_class('zabbix::database::postgresql').with_database_name('zabbix_proxy') }
           it { is_expected.to contain_class('zabbix::database::postgresql').with_database_user('zabbix-proxy') }
           it { is_expected.to contain_class('zabbix::database::postgresql').with_database_password('zabbix-proxy') }
@@ -135,7 +137,7 @@ describe 'zabbix::proxy' do
           end
 
           it { is_expected.to contain_class('zabbix::database::mysql').with_zabbix_type('proxy') }
-          it { is_expected.to contain_class('zabbix::database::mysql').with_zabbix_version('5.0') }
+          it { is_expected.to contain_class('zabbix::database::mysql').with_zabbix_version('3.4') }
           it { is_expected.to contain_class('zabbix::database::mysql').with_database_name('zabbix_proxy') }
           it { is_expected.to contain_class('zabbix::database::mysql').with_database_user('zabbix-proxy') }
           it { is_expected.to contain_class('zabbix::database::mysql').with_database_password('zabbix-proxy') }
@@ -218,12 +220,6 @@ describe 'zabbix::proxy' do
               database_password: 'zabbix-proxy',
               database_schema: 'zabbix-proxy',
               database_user: 'zabbix-proxy',
-              database_tlsconnect: 'verify_ca',
-              database_tlscafile: '/etc/zabbix/ssl/ca.cert',
-              database_tlscertfile: '/etc/zabbix/ssl/cert.cert',
-              database_tlskeyfile: '/etc/zabbix/ssl/key.key',
-              database_tlscipher: 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256',
-              database_tlscipher13: 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256',
               datasenderfrequency: '1',
               debuglevel: '4',
               externalscripts: '/usr/lib/zabbix/externalscripts',
@@ -245,7 +241,6 @@ describe 'zabbix::proxy' do
               localbuffer: '0',
               logfilesize: '15',
               logfile: '/var/log/zabbix/proxy_server.log',
-              logtype: 'file',
               logslowqueries: '0',
               mode: '0',
               offlinebuffer: '1',
@@ -253,9 +248,6 @@ describe 'zabbix::proxy' do
               snmptrapper: '0',
               snmptrapperfile: '/tmp/zabbix_traps.tmp',
               sshkeylocation: '/home/zabbix/.ssh/',
-              sslcertlocation_dir: '/usr/lib/zabbix/ssl/certs',
-              sslkeylocation_dir: '/usr/lib/zabbix/ssl/keys',
-              sslcalocation_dir: '/usr/lib/zabbix/ssl/certs',
               startdbsyncers: '4',
               startdiscoverers: '15',
               starthttppollers: '15',
@@ -263,7 +255,6 @@ describe 'zabbix::proxy' do
               startpingers: '15',
               startpollers: '15',
               startpollersunreachable: '15',
-              startpreprocessors: 10,
               starttrappers: '15',
               startvmwarecollectors: '0',
               timeout: '20',
@@ -276,13 +267,7 @@ describe 'zabbix::proxy' do
               vmwarefrequency: '60',
               zabbix_server_host: '192.168.1.1',
               zabbix_server_port: '10051',
-              zabbix_version: '5.0',
-              tlsciphercert: 'EECDH+aRSA+AES128:RSA+aRSA+AES128',
-              tlsciphercert13: 'EECDH+aRSA+AES128:RSA+aRSA+AES128',
-              tlscipherpsk: 'kECDHEPSK+AES128:kPSK+AES128',
-              tlscipherpsk13: 'TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256',
-              tlscipherall: 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256',
-              tlscipherall13: 'EECDH+aRSA+AES128:RSA+aRSA+AES128:kECDHEPSK+AES128:kPSK+AES128'
+              zabbix_version: '2.2'
             }
           end
 
@@ -293,7 +278,6 @@ describe 'zabbix::proxy' do
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^ListenPort=10051$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^LogFile=/var/log/zabbix/proxy_server.log$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^LogFileSize=15$} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^LogType=file$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^DebugLevel=4$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^PidFile=/var/run/zabbix/proxy_server.pid$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^DBHost=localhost$} }
@@ -301,12 +285,6 @@ describe 'zabbix::proxy' do
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^DBSchema=zabbix-proxy$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^DBUser=zabbix-proxy$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^DBPassword=zabbix-proxy$} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^DBTLSConnect=verify_ca} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^DBTLSCAFile=/etc/zabbix/ssl/ca.cert} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^DBTLSCertFile=/etc/zabbix/ssl/cert.cert} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^DBTLSKeyFile=/etc/zabbix/ssl/key.key} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^DBTLSCipher=TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^DBTLSCipher13=TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^ProxyLocalBuffer=0$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^ProxyOfflineBuffer=1$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^HeartbeatFrequency=60$} }
@@ -314,7 +292,6 @@ describe 'zabbix::proxy' do
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^DataSenderFrequency=1$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^StartPollers=15$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^StartIPMIPollers=15$} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^StartPreprocessors=10$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^StartPollersUnreachable=15$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^StartTrappers=15$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^StartPingers=15$} }
@@ -333,6 +310,7 @@ describe 'zabbix::proxy' do
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^CacheSize=8M$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^StartDBSyncers=4$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^HistoryCacheSize=16M$} }
+          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^HistoryTextCacheSize=8M$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^Timeout=20$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^TrapperTimeout=16$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^UnreachablePeriod=45$} }
@@ -346,20 +324,11 @@ describe 'zabbix::proxy' do
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^TmpDir=/tmp$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^AllowRoot=0$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^Include=/etc/zabbix/zabbix_proxy.conf.d$} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^SSLCertLocation=/usr/lib/zabbix/ssl/certs} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^SSLKeyLocation=/usr/lib/zabbix/ssl/keys} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^SSLCALocation=/usr/lib/zabbix/ssl/certs} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^LoadModulePath=\$\{libdir\}/modules$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^LoadModule=pizza$} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^TLSCipherCert=EECDH\+aRSA\+AES128:RSA\+aRSA\+AES128$} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^TLSCipherCert13=EECDH\+aRSA\+AES128:RSA\+aRSA\+AES128$} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^TLSCipherPSK=kECDHEPSK\+AES128:kPSK\+AES128$} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^TLSCipherPSK13=TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256$} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^TLSCipherAll=TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256$} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^TLSCipherAll13=EECDH\+aRSA\+AES128:RSA\+aRSA\+AES128:kECDHEPSK\+AES128:kPSK\+AES128$} }
         end
 
-        context 'with zabbix_proxy.conf and version 4.0' do
+        context 'with zabbix_proxy.conf and version 3.0' do
           let :params do
             {
               tlsaccept: 'cert',
@@ -371,7 +340,7 @@ describe 'zabbix::proxy' do
               tlsservercertsubject: 'MyZabbix',
               tlspskidentity: '/etc/zabbix/keys/identity.file',
               tlspskfile: '/etc/zabbix/keys/file.key',
-              zabbix_version: '4.0'
+              zabbix_version: '3.0'
             }
           end
 
@@ -386,41 +355,17 @@ describe 'zabbix::proxy' do
           it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^TLSPSKFile=/etc/zabbix/keys/file.key$} }
         end
 
-        context 'with zabbix_proxy.conf and version 5.0' do
+        context 'with zabbix_proxy.conf and version 3.4' do
           let :params do
             {
-              socketdir: '/var/run/zabbix',
-              zabbix_version: '5.0'
+              enableremotecommands: 1,
+              logremotecommands: 1,
+              zabbix_version: '3.4'
             }
           end
 
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^SocketDir=/var/run/zabbix} }
-        end
-
-        context 'with zabbix_proxy.conf and logtype' do
-          context 'declared as system' do
-            let :params do
-              {
-                logtype: 'system'
-              }
-            end
-
-            it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^LogType=system$} }
-            it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').without_content %r{^LogFile=} }
-            it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').without_content %r{^LogFileSize=} }
-          end
-
-          context 'declared as console' do
-            let :params do
-              {
-                logtype: 'console'
-              }
-            end
-
-            it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^LogType=console$} }
-            it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').without_content %r{^LogFile=} }
-            it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').without_content %r{^LogFileSize=} }
-          end
+          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^EnableRemoteCommands=1$} }
+          it { is_expected.to contain_file('/etc/zabbix/zabbix_proxy.conf').with_content %r{^LogRemoteCommands=1$} }
         end
       end
     end

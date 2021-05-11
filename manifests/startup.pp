@@ -21,7 +21,8 @@ define zabbix::startup (
   String $service_type                                   = 'simple',
   Optional[Boolean] $manage_database                     = undef,
   Optional[String] $service_name                         = $name,
-) {
+  ) {
+
   case $title {
     /agent/: {
       assert_type(Stdlib::Absolutepath, $agent_configfile_path)
@@ -38,9 +39,12 @@ define zabbix::startup (
   # provided by camp2camp/systemd
   if $facts['systemd'] {
     contain systemd
-    systemd::unit_file { "${name}.service":
+    file { "/etc/systemd/system/${name}.service":
+      ensure  => file,
+      mode    => '0664',
       content => template("zabbix/${service_name}-systemd.init.erb"),
     }
+    ~> Exec['systemctl-daemon-reload']
     file { "/etc/init.d/${name}":
       ensure  => absent,
     }

@@ -22,6 +22,7 @@ class zabbix::params {
       $manage_choco             = false
       $zabbix_package_agent     = 'zabbix-agent'
       $agent_configfile_path    = '/etc/zabbix/zabbix_agentd.conf'
+      $default_pskfile_path     = '/etc/zabbix/tlspskfile.key'
       $agent_config_owner       = 'zabbix'
       $agent_zabbix_user        = 'zabbix'
       $agent_config_group       = 'zabbix'
@@ -53,6 +54,7 @@ class zabbix::params {
       $manage_choco             = false
       $zabbix_package_agent     = 'zabbix-agent'
       $agent_configfile_path    = '/etc/zabbix/zabbix_agentd.conf'
+      $default_pskfile_path     = '/etc/zabbix/tlspskfile.key'
       $agent_config_owner       = 'zabbix-agent'
       $agent_zabbix_user        = 'zabbix-agent'
       $agent_config_group       = 'zabbix-agent'
@@ -72,6 +74,7 @@ class zabbix::params {
       $manage_choco             = false
       $zabbix_package_agent     = 'zabbix-agent'
       $agent_configfile_path    = '/etc/zabbix_agentd.conf'
+      $default_pskfile_path     = '/etc/zabbix_tlspskfile.key'
       $agent_config_owner       = 'zabbix'
       $agent_zabbix_user        = 'zabbix'
       $agent_config_group       = 'zabbix'
@@ -91,6 +94,7 @@ class zabbix::params {
       $manage_choco             = false
       $zabbix_package_agent     = 'zabbix'
       $agent_configfile_path    = '/etc/zabbix/zabbix_agentd.conf'
+      $default_pskfile_path     = '/etc/zabbix/tlspskfile.key'
       $agent_config_owner       = 'zabbix'
       $agent_zabbix_user        = 'zabbix'
       $agent_config_group       = 'zabbix'
@@ -107,6 +111,7 @@ class zabbix::params {
       $zabbix_package_agent    = 'zabbix-agent'
       $zabbix_package_provider = 'chocolatey'
       $agent_configfile_path   = 'C:/ProgramData/zabbix/zabbix_agentd.conf'
+      $default_pskfile_path    = 'C:/ProgramData/zabbix/tlspskfile.key'
       $agent_config_owner      = undef
       $agent_zabbix_user       = undef
       $agent_config_group      = undef
@@ -124,6 +129,7 @@ class zabbix::params {
       $manage_choco             = false
       $zabbix_package_agent     = 'zabbix-agent'
       $agent_configfile_path    = '/etc/zabbix/zabbix_agentd.conf'
+      $default_pskfile_path     = '/etc/zabbix/tlspskfile.key'
       $agent_config_owner       = 'zabbix'
       $agent_zabbix_user        = 'zabbix'
       $agent_config_group       = 'zabbix'
@@ -138,8 +144,10 @@ class zabbix::params {
 
   if downcase($facts['kernel']) == 'windows' {
     $zabbix_version = '4.4.5'
+  } elsif $facts['os']['name'] == 'Debian' and Integer($facts['os']['release']['major']) == 10 {
+    $zabbix_version =  '4.0'
   } else {
-    $zabbix_version = '5.0'
+    $zabbix_version = '3.4'
   }
 
   $manage_startup_script = downcase($facts['kernel']) ? {
@@ -164,7 +172,6 @@ class zabbix::params {
   $manage_apt                               = true
   $repo_location                            = undef
   $unsupported_repo_location                = undef
-  $frontend_repo_location                   = undef
   $manage_resources                         = false
   $manage_vhost                             = true
   $database_path                            = '/usr/sbin'
@@ -195,11 +202,6 @@ class zabbix::params {
   $ldap_reqcert                             = undef
   $server_api_pass                          = 'zabbix'
   $server_api_user                          = 'Admin'
-  $server_database_double_ieee754           = false
-  $saml_sp_key                              = undef
-  $saml_sp_cert                             = undef
-  $saml_idp_cert                            = undef
-  $saml_settings                            = {}
 
   # Zabbix-server
   $server_alertscriptspath                  = '/etc/zabbix/alertscripts'
@@ -224,6 +226,7 @@ class zabbix::params {
   $server_externalscripts                   = '/usr/lib/zabbix/externalscripts'
   $server_historycachesize                  = '8M'
   $server_historyindexcachesize             = undef
+  $server_historytextcachesize              = '16M'
   $server_housekeepingfrequency             = '1'
   $server_include                           = '/etc/zabbix/zabbix_server.conf.d'
   $server_javagateway                       = undef
@@ -232,7 +235,7 @@ class zabbix::params {
   $server_listenport                        = '10051'
   $server_loadmodule                        = undef
   $server_loadmodulepath                    = '/usr/lib/modules'
-  # provided by camptocamp/systemd
+  # provided by camp2camp/systemd
   if $facts['systemd'] {
     $server_logtype                          = 'system'
     $server_logfile                          = undef
@@ -244,9 +247,13 @@ class zabbix::params {
   }
   $server_logslowqueries                    = '0'
   $server_maxhousekeeperdelete              = '500'
+  $server_nodeid                            = '0'
+  $server_nodenoevents                      = '0'
+  $server_nodenohistory                     = '0'
   $server_pidfile                           = '/var/run/zabbix/zabbix_server.pid'
   $server_proxyconfigfrequency              = '3600'
   $server_proxydatafrequency                = '1'
+  $server_senderfrequency                   = '30'
   $server_service_name                      = 'zabbix-server'
   $server_pacemaker                         = false
   $server_pacemaker_resource                = undef
@@ -256,39 +263,23 @@ class zabbix::params {
   $server_sslcertlocation                   = '/usr/lib/zabbix/ssl/certs'
   $server_sslkeylocation                    = '/usr/lib/zabbix/ssl/keys'
   $server_startdbsyncers                    = '4'
-  $server_startalerters                     = 3
   $server_startdiscoverers                  = '1'
-  $server_startescalators                   = 1
   $server_starthttppollers                  = '1'
   $server_startipmipollers                  = '0'
   $server_startjavapollers                  = '5'
-  $server_startlldprocessors                = 2
   $server_startpingers                      = '1'
   $server_startpollers                      = '5'
   $server_startpollersunreachable           = '1'
-  $server_startpreprocessors                = 3
   $server_startproxypollers                 = '1'
   $server_startsnmptrapper                  = '0'
   $server_starttimers                       = '1'
   $server_starttrappers                     = '5'
   $server_startvmwarecollectors             = '0'
   $server_timeout                           = '3'
-  $server_database_tlsconnect               = undef
-  $server_database_tlscafile                = undef
-  $server_database_tlscertfile              = undef
-  $server_database_tlskeyfile               = undef
-  $server_database_tlscipher                = undef
-  $server_database_tlscipher13              = undef
   $server_tlscafile                         = undef
   $server_tlscertfile                       = undef
   $server_tlscrlfile                        = undef
   $server_tlskeyfile                        = undef
-  $server_tlscipherall                      = undef
-  $server_tlscipherall13                    = undef
-  $server_tlsciphercert                     = undef
-  $server_tlsciphercert13                   = undef
-  $server_tlscipherpsk                      = undef
-  $server_tlscipherpsk13                    = undef
   $server_tmpdir                            = '/tmp'
   $server_trappertimeout                    = '300'
   $server_trendcachesize                    = '4M'
@@ -299,15 +290,12 @@ class zabbix::params {
   $server_vmwarecachesize                   = '8M'
   $server_vmwarefrequency                   = '60'
   $server_vmwaretimeout                     = undef
-  $server_socketdir                         = undef
 
   # Agent specific params
   $agent_allowroot                          = '0'
   $agent_buffersend                         = '5'
   $agent_buffersize                         = '100'
   $agent_debuglevel                         = '3'
-  $agent_allowkey                           = undef
-  $agent_denykey                            = 'system.run[*]'
   $agent_enableremotecommands               = '0'
   $agent_hostmetadata                       = undef
   $agent_hostmetadataitem                   = undef
@@ -335,27 +323,26 @@ class zabbix::params {
   $agent_tlsconnect                         = undef
   $agent_tlscrlfile                         = undef
   $agent_tlskeyfile                         = undef
+  $agent_tlspsk                             = undef
   $agent_tlspskfile                         = undef
-  $agent_tlscipherall                       = undef
-  $agent_tlscipherall13                     = undef
-  $agent_tlsciphercert                      = undef
-  $agent_tlsciphercert13                    = undef
-  $agent_tlscipherpsk                       = undef
-  $agent_tlscipherpsk13                     = undef
   $agent_tlspskidentity                     = undef
   $agent_tlsservercertissuer                = undef
   $agent_tlsservercertsubject               = undef
+  $agent_tlscertissuer                      = undef
+  $agent_tlscertsubject                     = undef
   $agent_unsafeuserparameters               = '0'
   $agent_use_ip                             = true
   $agent_userparameter                      = undef
   $agent_zabbix_alias                       = undef
   $agent_zbx_group                          = 'Linux servers'
-  $agent_zbx_groups                         = ['Linux servers',]
+  $agent_zbx_groups                         = [ 'Linux servers', ]
   $agent_zbx_group_create                   = true
-  $agent_zbx_templates                      = ['Template OS Linux', 'Template App SSH Service']
+  $agent_zbx_templates                      = [
+    'Template OS Linux',
+    'Template App SSH Service']
   $apache_status                            = false
   $monitored_by_proxy                       = undef
-  # provided by camptocamp/systemd
+  # provided by camp2camp/systemd
   if $facts['systemd'] {
     $agent_logtype                          = 'system'
     $agent_logfile                          = undef
@@ -371,6 +358,7 @@ class zabbix::params {
     $agent_logfile                          = '/var/log/zabbix/zabbix_agentd.log'
     $agent_logfilesize                      = '100'
   }
+  $agent_purge_templates                    = true
 
   # Proxy specific params
   $proxy_allowroot                          = '0'
@@ -402,16 +390,8 @@ class zabbix::params {
   $proxy_loadmodule                         = undef
   $proxy_loadmodulepath                     = '/usr/lib/modules'
   $proxy_localbuffer                        = '0'
-  # provided by camptocamp/systemd
-  if $facts['systemd'] {
-    $proxy_logtype                          = 'system'
-    $proxy_logfile                          = undef
-    $proxy_logfilesize                      = undef
-  } else {
-    $proxy_logtype                          = 'file'
-    $proxy_logfile                          = '/var/log/zabbix/zabbix_proxy.log'
-    $proxy_logfilesize                      = '10'
-  }
+  $proxy_logfile                            = '/var/log/zabbix/zabbix_proxy.log'
+  $proxy_logfilesize                        = '10'
   $proxy_logremotecommands                  = 0
   $proxy_logslowqueries                     = '0'
   $proxy_mode                               = '0'
@@ -423,9 +403,6 @@ class zabbix::params {
   $proxy_snmptrapperfile                    = '/tmp/zabbix_traps.tmp'
   $proxy_sourceip                           = undef
   $proxy_sshkeylocation                     = undef
-  $proxy_sslcertlocation                    = undef
-  $proxy_sslkeylocation                     = undef
-  $proxy_sslcalocation                      = undef
   $proxy_startdbsyncers                     = '4'
   $proxy_startdiscoverers                   = '1'
   $proxy_starthttppollers                   = '1'
@@ -434,16 +411,9 @@ class zabbix::params {
   $proxy_startpingers                       = '1'
   $proxy_startpollers                       = '5'
   $proxy_startpollersunreachable            = '1'
-  $proxy_startpreprocessors                 = 3
   $proxy_starttrappers                      = '5'
   $proxy_startvmwarecollectors              = '0'
   $proxy_timeout                            = '3'
-  $proxy_database_tlsconnect                = undef
-  $proxy_database_tlscafile                 = undef
-  $proxy_database_tlscertfile               = undef
-  $proxy_database_tlskeyfile                = undef
-  $proxy_database_tlscipher                 = undef
-  $proxy_database_tlscipher13               = undef
   $proxy_tlsaccept                          = undef
   $proxy_tlscafile                          = undef
   $proxy_tlscertfile                        = undef
@@ -451,12 +421,6 @@ class zabbix::params {
   $proxy_tlscrlfile                         = undef
   $proxy_tlskeyfile                         = undef
   $proxy_tlspskfile                         = undef
-  $proxy_tlscipherall                       = undef
-  $proxy_tlscipherall13                     = undef
-  $proxy_tlsciphercert                      = undef
-  $proxy_tlsciphercert13                    = undef
-  $proxy_tlscipherpsk                       = undef
-  $proxy_tlscipherpsk13                     = undef
   $proxy_tlspskidentity                     = undef
   $proxy_tlsservercertissuer                = undef
   $proxy_tlsservercertsubject               = undef
@@ -473,10 +437,6 @@ class zabbix::params {
   $proxy_zabbix_server_host                 = undef
   $proxy_zabbix_server_port                 = '10051'
   $proxy_zbx_templates                      = ['Template App Zabbix Proxy']
-  $proxy_socketdir                          = versioncmp($zabbix_version, '5.0') ? {
-    -1      => undef,
-    default => '/var/run/zabbix',
-  }
 
   # Java Gateway specific params
   $javagateway_listenip                     = '0.0.0.0'
@@ -487,15 +447,23 @@ class zabbix::params {
 
   # SE Linux specific params
   $selinux_require                          = ['type zabbix_agent_t', 'class process setrlimit', 'class unix_dgram_socket create']
-  $selinux_rules                            = { 'zabbix_agent_t' => ['allow zabbix_agent_t self:process setrlimit', 'allow zabbix_agent_t self:unix_dgram_socket create'] }
+  $selinux_rules                            = { 'zabbix_agent_t' => ['allow zabbix_agent_t self:process setrlimit', 'allow zabbix_agent_t self:unix_dgram_socket create']}
 
   $manage_selinux = fact('os.selinux.enabled') ? {
     true    => true,
     default => false,
   }
 
-  $additional_service_params = '--foreground'
-  $service_type              = 'simple'
+  # services should run foreground and as simple type
+  # but this only works in 3.0 and newer
+  # https://www.freedesktop.org/software/systemd/man/systemd.service.html#Type=
+  if versioncmp($zabbix_version, '3.0') < 0 {
+    $additional_service_params = ''
+    $service_type              = 'forking'
+  } else {
+    $additional_service_params = '--foreground'
+    $service_type              = 'simple'
+  }
 
   $default_web_config_owner = $facts['os']['name'] ? {
     /(Ubuntu|Debian)/ => 'www-data',

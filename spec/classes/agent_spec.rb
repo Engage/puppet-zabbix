@@ -34,8 +34,11 @@ describe 'zabbix::agent' do
                     else
                       '/etc/zabbix/zabbix_agentd.d'
                     end
-      zabbix_version = '5.0'
-
+      zabbix_version = if facts[:os]['name'] == 'Debian' && facts[:os]['release']['major'].to_i == 10
+                         '4.0'
+                       else
+                         '3.4'
+                       end
       let :facts do
         facts.merge(systemd_fact)
       end
@@ -65,21 +68,24 @@ describe 'zabbix::agent' do
           end
         else
           it do
-            is_expected.to contain_package(package_name).
-              with_ensure('present').
-              with_tag('zabbix').
-              that_requires('Class[zabbix::repo]')
+            is_expected.to contain_package(package_name).with(
+              ensure:   'present',
+              require:  'Class[Zabbix::Repo]',
+              tag:      'zabbix'
+            )
           end
           it do
-            is_expected.to contain_service(service_name).
-              with_ensure('running').
-              with_enable(true).
-              with_service_provider(facts[:osfamily] == 'AIX' ? 'init' : nil).
-              that_requires("Package[#{package_name}]")
+            is_expected.to contain_service(service_name).with(
+              ensure:     'running',
+              enable:     true,
+              hasstatus:  true,
+              hasrestart: true,
+              require:    "Package[#{package_name}]"
+            )
           end
 
           it { is_expected.to contain_file(include_dir).with_ensure('directory') }
-          it { is_expected.to contain_zabbix__startup(service_name).that_requires("Package[#{package_name}]") }
+          it { is_expected.to contain_zabbix__startup(service_name).with(require: "Package[#{package_name}]") }
           it { is_expected.to compile.with_all_deps }
           it { is_expected.to contain_class('zabbix::params') }
         end
@@ -98,11 +104,11 @@ describe 'zabbix::agent' do
         when 'Debian'
           # rubocop:disable RSpec/RepeatedExample
           it { is_expected.to contain_class('zabbix::repo').with_zabbix_version(zabbix_version) }
-          it { is_expected.to contain_package('zabbix-agent').that_requires('Class[Zabbix::Repo]') }
+          it { is_expected.to contain_package('zabbix-agent').with_require('Class[Zabbix::Repo]') }
           it { is_expected.to contain_apt__source('zabbix') }
         when 'RedHat'
           it { is_expected.to contain_class('zabbix::repo').with_zabbix_version(zabbix_version) }
-          it { is_expected.to contain_package('zabbix-agent').that_requires('Class[Zabbix::Repo]') }
+          it { is_expected.to contain_package('zabbix-agent').with_require('Class[Zabbix::Repo]') }
           it { is_expected.to contain_yumrepo('zabbix-nonsupported') }
           it { is_expected.to contain_yumrepo('zabbix') }
           # rubocop:enable RSpec/RepeatedExample
@@ -260,8 +266,6 @@ describe 'zabbix::agent' do
               buffersend: '5',
               buffersize: '100',
               debuglevel: '4',
-              allowkey: 'system.run[*]',
-              denykey: 'system.run[*]',
               enableremotecommands: '1',
               hostname: '10050',
               include_dir: '/etc/zabbix/zabbix_agentd.d',
@@ -270,7 +274,6 @@ describe 'zabbix::agent' do
               loadmodulepath: '${libdir}/modules',
               logfilesize: '4',
               logfile: '/var/log/zabbix/zabbix_agentd.log',
-              logtype: 'file',
               logremotecommands: '0',
               pidfile: '/var/run/zabbix/zabbix_agentd.pid',
               refreshactivechecks: '120',
@@ -288,13 +291,7 @@ describe 'zabbix::agent' do
               tlscertfile: '/etc/zabbix/keys/tls.crt',
               tlskeyfile: '/etc/zabbix/keys/tls.key',
               tlspskidentity: '/etc/zabbix/keys/tlspskidentity.id',
-              tlspskfile: '/etc/zabbix/keys/tlspskfile.key',
-              tlsciphercert: 'EECDH+aRSA+AES128:RSA+aRSA+AES128',
-              tlsciphercert13: 'EECDH+aRSA+AES128:RSA+aRSA+AES128',
-              tlscipherpsk: 'kECDHEPSK+AES128:kPSK+AES128',
-              tlscipherpsk13: 'TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256',
-              tlscipherall: 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256',
-              tlscipherall13: 'EECDH+aRSA+AES128:RSA+aRSA+AES128:kECDHEPSK+AES128:kPSK+AES128'
+              tlspskfile: '/etc/zabbix/keys/tlspskfile.key'
             }
           end
 
@@ -302,8 +299,7 @@ describe 'zabbix::agent' do
           it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^BufferSend=5$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^BufferSize=100$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^DebugLevel=4$} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^AllowKey=system.run\[\*\]$} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^DenyKey=system.run\[\*\]$} }
+          it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^EnableRemoteCommands=1$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^Hostname=10050$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^Include=/etc/zabbix/zabbix_agentd.d$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^ListenPort=10050$} }
@@ -311,7 +307,6 @@ describe 'zabbix::agent' do
           it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^LoadModulePath=\$\{libdir\}/modules$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^LogFileSize=4$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^LogFile=/var/log/zabbix/zabbix_agentd.log$} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^LogType=file$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^LogRemoteCommands=0$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^PidFile=/var/run/zabbix/zabbix_agentd.pid$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^RefreshActiveChecks=120$} }
@@ -330,12 +325,6 @@ describe 'zabbix::agent' do
           it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^TLSKeyFile=/etc/zabbix/keys/tls.key$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^TLSPSKIdentity=/etc/zabbix/keys/tlspskidentity.id$} }
           it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^TLSPSKFile=/etc/zabbix/keys/tlspskfile.key$} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^TLSCipherCert=EECDH\+aRSA\+AES128:RSA\+aRSA\+AES128$} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^TLSCipherCert13=EECDH\+aRSA\+AES128:RSA\+aRSA\+AES128$} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^TLSCipherPSK=kECDHEPSK\+AES128:kPSK\+AES128$} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^TLSCipherPSK13=TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256$} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^TLSCipherAll=TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256$} }
-          it { is_expected.to contain_file('/etc/zabbix/zabbix_agentd.conf').with_content %r{^TLSCipherAll13=EECDH\+aRSA\+AES128:RSA\+aRSA\+AES128:kECDHEPSK\+AES128:kPSK\+AES128$} }
         end
       end
 
@@ -358,36 +347,11 @@ describe 'zabbix::agent' do
         end
 
         it do
-          is_expected.to contain_service(service_name).
-            with_ensure('stopped').
-            with_enable(false).
-            that_requires("Package[#{package_name}]")
-        end
-      end
-
-      context 'with zabbix_agentd.conf and logtype is declared' do
-        context 'declare logtype as system' do
-          let :params do
-            {
-              logtype: 'system'
-            }
-          end
-
-          it { is_expected.to contain_file(config_path).with_content %r{^LogType=system$} }
-          it { is_expected.to contain_file(config_path).without_content %r{^LogFile=} }
-          it { is_expected.to contain_file(config_path).without_content %r{^LogFileSize=} }
-        end
-
-        context 'declare logtype as console' do
-          let :params do
-            {
-              logtype: 'console'
-            }
-          end
-
-          it { is_expected.to contain_file(config_path).with_content %r{^LogType=console$} }
-          it { is_expected.to contain_file(config_path).without_content %r{^LogFile=} }
-          it { is_expected.to contain_file(config_path).without_content %r{^LogFileSize=} }
+          is_expected.to contain_service(service_name).with(
+            ensure:     'stopped',
+            enable:     false,
+            require:    "Package[#{package_name}]"
+          )
         end
       end
     end

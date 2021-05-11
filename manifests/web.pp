@@ -97,11 +97,6 @@
 # [*database_schema*]
 #   Schema name. used for ibm db2.
 #
-# [*database_double_ieee754*]
-#   Enable extended range of float values for new installs of Zabbix >= 5.0 and
-#   after patching upgraded installs to 5.0 or greater.
-#   https://www.zabbix.com/documentation/5.0/manual/installation/upgrade_notes_500#enabling_extended_range_of_numeric_float_values
-#
 # [*database_user*]
 #   Database user. ignored for sqlite.
 #
@@ -148,28 +143,16 @@
 #   Max amount of vars for GET/POST requests
 #
 # [*ldap_cacert*]
-#   Set location of ca_cert used by LDAP authentication.
+#  Set location of ca_cert used by LDAP authentication.
 #
 # [*ldap_clientcrt*]
-#   Set location of client cert used by LDAP authentication.
+#  Set location of client cert used by LDAP authentication.
 #
 # [*ldap_clientkey*]
-#   Set location of client key used by LDAP authentication.
+# Set location of client key used by LDAP authentication.
 #
 # [*ldap_reqcert *]
-#   Specifies what checks to perform on a server certificate
-#
-# [*saml_sp_key*]
-#   The location of the SAML Service Provider Key file.
-#
-# [*saml_sp_cert*]
-#   The location of the SAML Service Provider Certificate.
-#
-# [*saml_idp_cert*]
-#   The location of the SAML Identity Provider Certificate.
-#
-# [*saml_settings*]
-#   A hash of additional SAML SSO settings.
+# Specifies what checks to perform on a server certificate
 #
 # [*puppetgem*]
 # Provider for the zabbixapi gem package
@@ -228,7 +211,6 @@ class zabbix::web (
   $database_host                                                      = $zabbix::params::server_database_host,
   $database_name                                                      = $zabbix::params::server_database_name,
   $database_schema                                                    = $zabbix::params::server_database_schema,
-  Boolean $database_double_ieee754                                    = $zabbix::params::server_database_double_ieee754,
   $database_user                                                      = $zabbix::params::server_database_user,
   $database_password                                                  = $zabbix::params::server_database_password,
   $database_socket                                                    = $zabbix::params::server_database_socket,
@@ -243,28 +225,17 @@ class zabbix::web (
   $apache_php_max_input_time                                          = $zabbix::params::apache_php_max_input_time,
   $apache_php_always_populate_raw_post_data                           = $zabbix::params::apache_php_always_populate_raw_post_data,
   $apache_php_max_input_vars                                          = $zabbix::params::apache_php_max_input_vars,
-  Optional[Stdlib::Absolutepath] $ldap_cacert                         = $zabbix::params::ldap_cacert,
-  Optional[Stdlib::Absolutepath] $ldap_clientcert                     = $zabbix::params::ldap_clientcert,
-  Optional[Stdlib::Absolutepath] $ldap_clientkey                      = $zabbix::params::ldap_clientkey,
+  $ldap_cacert                                                        = $zabbix::params::ldap_cacert,
+  $ldap_clientcert                                                    = $zabbix::params::ldap_clientcert,
+  $ldap_clientkey                                                     = $zabbix::params::ldap_clientkey,
   Optional[Enum['never','allow','try','demand','hard']] $ldap_reqcert = $zabbix::params::ldap_reqcert,
-  Optional[Stdlib::Absolutepath] $saml_sp_key                         = $zabbix::params::saml_sp_key,
-  Optional[Stdlib::Absolutepath] $saml_sp_cert                        = $zabbix::params::saml_sp_cert,
-  Optional[Stdlib::Absolutepath] $saml_idp_cert                       = $zabbix::params::saml_idp_cert,
-  Hash[String[1], Variant[ScalarData, Hash]] $saml_settings           = $zabbix::params::saml_settings,
   $puppetgem                                                          = $zabbix::params::puppetgem,
   Boolean $manage_selinux                                             = $zabbix::params::manage_selinux,
 ) inherits zabbix::params {
-  # check osfamily, Arch is currently not supported for web
-  if $facts['os']['family'] in ['Archlinux', 'Gentoo',] {
-    fail("${facts['os']['family']} is currently not supported for zabbix::web")
-  }
 
-  # zabbix frontend 5.x is not supported, among others, on stretch and xenial.
-  # https://www.zabbix.com/documentation/current/manual/installation/frontend/frontend_on_debian
-  if $facts['os']['name'] in ['ubuntu', 'debian'] and versioncmp($zabbix_version, '5') >= 0 {
-    if versioncmp($facts['os']['release']['major'], '16.04') == 0 or versioncmp($facts['os']['release']['major'], '9') == 0 {
-      fail("${facts['os']['family']} ${$facts['os']['release']['major']} is not supported for zabbix::web")
-    }
+  # check osfamily, Arch is currently not supported for web
+  if $facts['os']['family'] in [ 'Archlinux', 'Gentoo', ] {
+    fail("${facts['os']['family']} is currently not supported for zabbix::web")
   }
 
   # Only include the repo class if it has not yet been included
@@ -297,14 +268,17 @@ class zabbix::web (
   if $manage_resources {
     # Determine correct zabbixapi version.
     case $zabbix_version {
-      '4.0': {
-        $zabbixapi_version = '4.2.0'
+      '2.2': {
+        $zabbixapi_version = '2.2.2'
       }
-      /^5\.[02]/: {
-        $zabbixapi_version = '5.0.0-alpha1'
+      '2.4': {
+        $zabbixapi_version = '2.4.4'
       }
-      default: {
-        fail("Zabbix ${zabbix_version} is not supported!")
+      '3.2' : {
+        $zabbixapi_version = '3.2.1'
+      }
+      default : {
+        $zabbixapi_version = '4.0.0'
       }
     }
 
@@ -364,29 +338,6 @@ class zabbix::web (
         ],
       }
     }
-    'CentOS', 'RedHat': {
-      $zabbix_web_package = 'zabbix-web'
-      if ($facts['os']['release']['major'] == '7' and versioncmp($zabbix_version, '5') >= 0) {
-        package { 'zabbix-required-scl-repo':
-          ensure => 'latest',
-          name   => 'centos-release-scl',
-        }
-
-        package { "zabbix-web-${db}-scl":
-          ensure  => $zabbix_package_state,
-          before  => Package[$zabbix_web_package],
-          require => Class['zabbix::repo'],
-          tag     => 'zabbix',
-        }
-      } else {
-        package { "zabbix-web-${db}":
-          ensure  => $zabbix_package_state,
-          before  => Package[$zabbix_web_package],
-          require => Class['zabbix::repo'],
-          tag     => 'zabbix',
-        }
-      }
-    }
     default: {
       $zabbix_web_package = 'zabbix-web'
 
@@ -424,69 +375,9 @@ class zabbix::web (
     content => template('zabbix/web/zabbix.conf.php.erb'),
   }
 
-  # For API to work on Zabbix 5.x zabbix.conf.php needs to be in the root folder.
-  if versioncmp($zabbix_version, '5') >= 0 {
-    file { '/etc/zabbix/zabbix.conf.php':
-      ensure => link,
-      target => '/etc/zabbix/web/zabbix.conf.php',
-      owner  => $web_config_owner,
-      group  => $web_config_group,
-      mode   => '0640',
-    }
-  }
-
   # Is set to true, it will create the apache vhost.
   if $manage_vhost {
     include apache
-    if $facts['os']['family'] == 'RedHat' and versioncmp($facts['os']['release']['major'], '7') == 0 and versioncmp($zabbix_version, '5') >= 0 {
-      include apache::mod::proxy
-      include apache::mod::proxy_fcgi
-      $apache_vhost_custom_fragment = ''
-
-      service { 'rh-php72-php-fpm':
-        ensure => 'running',
-        enable => true,
-      }
-
-      # PHP parameters are moved to /etc/opt/rh/rh-php72/php-fpm.d/zabbix.conf per package zabbix-web-deps-scl
-      file { '/etc/opt/rh/rh-php72/php-fpm.d/zabbix.conf':
-        ensure  => file,
-        notify  => Service['rh-php72-php-fpm'],
-        content => epp('zabbix/web/php-fpm.d.zabbix.conf.epp'),
-      }
-
-      $fcgi_filematch = {
-        path     => '/usr/share/zabbix',
-        provider => 'directory',
-        addhandlers => [
-          {
-            extensions => [
-              'php',
-              'phar',
-            ],
-            handler => 'proxy:unix:/var/opt/rh/rh-php72/run/php-fpm/zabbix.sock|fcgi://localhost',
-          },
-        ],
-      }
-      $proxy_directory = {
-        path => 'fcgi://localhost:9000',
-        provider => 'proxy',
-      }
-    }
-    else {
-      $apache_vhost_custom_fragment = "
-        php_value max_execution_time ${apache_php_max_execution_time}
-        php_value memory_limit ${apache_php_memory_limit}
-        php_value post_max_size ${apache_php_post_max_size}
-        php_value upload_max_filesize ${apache_php_upload_max_filesize}
-        php_value max_input_time ${apache_php_max_input_time}
-        php_value always_populate_raw_post_data ${apache_php_always_populate_raw_post_data}
-        php_value max_input_vars ${apache_php_max_input_vars}
-        # Set correct timezone
-        php_value date.timezone ${zabbix_timezone}"
-      $fcgi_filematch = {}
-      $proxy_directory = {}
-    }
     # Check if we use ssl. If so, we also create an non ssl
     # vhost for redirect traffic from non ssl to ssl site.
     if $apache_use_ssl {
@@ -531,34 +422,40 @@ class zabbix::web (
       default_vhost   => $default_vhost,
       add_listen      => true,
       directories     => [
-        merge(
-          merge( {
-              path     => '/usr/share/zabbix',
-              provider => 'directory',
-          }, $directory_allow),
-          $fcgi_filematch
-        ),
-        merge( {
-            path     => '/usr/share/zabbix/conf',
-            provider => 'directory',
+        merge({
+          path     => '/usr/share/zabbix',
+          provider => 'directory',
+        }, $directory_allow),
+        merge({
+          path     => '/usr/share/zabbix/conf',
+          provider => 'directory',
         }, $directory_deny),
-        merge( {
-            path     => '/usr/share/zabbix/api',
-            provider => 'directory',
+        merge({
+          path     => '/usr/share/zabbix/api',
+          provider => 'directory',
         }, $directory_deny),
-        merge( {
-            path     => '/usr/share/zabbix/include',
-            provider => 'directory',
+        merge({
+          path     => '/usr/share/zabbix/include',
+          provider => 'directory',
         }, $directory_deny),
-        merge( {
-            path     => '/usr/share/zabbix/include/classes',
-            provider => 'directory',
+        merge({
+          path     => '/usr/share/zabbix/include/classes',
+          provider => 'directory',
         }, $directory_deny),
       ],
-      custom_fragment => $apache_vhost_custom_fragment,
+      custom_fragment => "
+   php_value max_execution_time ${apache_php_max_execution_time}
+   php_value memory_limit ${apache_php_memory_limit}
+   php_value post_max_size ${apache_php_post_max_size}
+   php_value upload_max_filesize ${apache_php_upload_max_filesize}
+   php_value max_input_time ${apache_php_max_input_time}
+   php_value always_populate_raw_post_data ${apache_php_always_populate_raw_post_data}
+   php_value max_input_vars ${apache_php_max_input_vars}
+   # Set correct timezone
+   php_value date.timezone ${zabbix_timezone}",
       rewrites        => [
         {
-        rewrite_rule => ['^$ /index.php [L]'] }
+          rewrite_rule => ['^$ /index.php [L]'] }
       ],
       ssl             => $apache_use_ssl,
       ssl_cert        => $apache_ssl_cert,
@@ -572,12 +469,12 @@ class zabbix::web (
   # check if selinux is active and allow zabbix
   if fact('os.selinux.enabled') == true and $manage_selinux {
     # allow httpd to speak to the zabbix service
-    selboolean { 'httpd_can_connect_zabbix':
+    selboolean{'httpd_can_connect_zabbix':
       persistent => true,
       value      => 'on',
     }
     # allow httpd to speak to the database
-    selboolean { 'httpd_can_network_connect_db':
+    selboolean{'httpd_can_network_connect_db':
       persistent => true,
       value      => 'on',
     }

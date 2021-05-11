@@ -61,9 +61,6 @@
 # [*zbx_macros*]
 #   List of macros which will be added when host is configured.
 #
-# [*zbx_interface_type*]
-#   Integer specifying type of interface to be created
-#
 # [*agent_configfile_path*]
 #   Agent config file path defaults to /etc/zabbix/zabbix_agentd.conf
 #
@@ -76,23 +73,11 @@
 # [*logfilesize*]
 #   Maximum size of log file in MB.
 #
-# [*logtype*]
-#   Specifies where log messages are written to. Can be one of:
-#   - console
-#   - file
-#   - system
-#
 # [*debuglevel*]
 #   Specifies debug level.
 #
 # [*sourceip*]
 #   Source ip address for outgoing connections.
-#
-# [*allowkey*]
-#   Allow execution of item keys matching pattern.
-#
-# [*denykey*]
-#   Deny execution of items keys matching pattern.
 #
 # [*enableremotecommands*]
 #   Whether remote commands from zabbix server are allowed.
@@ -187,6 +172,14 @@
 # [*tlscertfile*]
 #   Full pathname of a file containing the proxy certificate or certificate chain.
 #
+# [*tlscertissuer*]
+#   If you want to configure the resource (i.e. manage_resources is true) you have to specifiy the issuer.
+#   it must match the issuer of tlscertfile.
+#
+# [*tlscertsubject*]
+#   If you want to configure the resource (i.e. manage_resources is true) you have to specifiy the subject.
+#   it must match the subject of tlscertfile.
+#
 # [*tlsconnect*]
 #   How the proxy should connect to Zabbix server. Used for an active proxy, ignored on a passive proxy.
 #
@@ -199,32 +192,12 @@
 # [*tlspskfile*]
 #   Full pathname of a file containing the pre-shared key.
 #
+# [*tlspsk*]
+#   If you want to configure the resource (i.e manage_resources is true) you have to specifiy the PSK that.
+#   tlspskfile will be created with the correct content.
+#
 # [*tlspskidentity*]
 #   Unique, case sensitive string used to identify the pre-shared key.
-#
-# [*tlscipherall*]
-#   GnuTLS priority string or OpenSSL (TLS 1.2) cipher string. Override the default ciphersuite selection criteria
-#   for certificate- and PSK-based encryption.
-#
-# [*tlscipherall13*]
-#   Cipher string for OpenSSL 1.1.1 or newer in TLS 1.3. Override the default ciphersuite selection criteria
-#   for certificate- and PSK-based encryption.
-#
-# [*tlsciphercert*]
-#   GnuTLS priority string or OpenSSL (TLS 1.2) cipher string. Override the default ciphersuite selection criteria
-#   for certificate-based encryption.
-#
-# [*tlsciphercert13*]
-#   Cipher string for OpenSSL 1.1.1 or newer in TLS 1.3. Override the default ciphersuite selection criteria
-#   for certificate-based encryption.
-#
-# [*tlscipherpsk*]
-#  GnuTLS priority string or OpenSSL (TLS 1.2) cipher string. Override the default ciphersuite selection criteria
-#  for PSK-based encryption.
-#
-# [*tlscipherpsk13*]
-#  Cipher string for OpenSSL 1.1.1 or newer in TLS 1.3. Override the default ciphersuite selection criteria
-#  for PSK-based encryption.
 #
 # [*tlsservercertissuer*]
 #   Allowed server certificate issuer.
@@ -292,17 +265,14 @@ class zabbix::agent (
   $zbx_group_create                               = $zabbix::params::agent_zbx_group_create,
   $zbx_templates                                  = $zabbix::params::agent_zbx_templates,
   Array[Hash] $zbx_macros                         = [],
-  Integer[1,4] $zbx_interface_type                = 1,
   $agent_configfile_path                          = $zabbix::params::agent_configfile_path,
   $pidfile                                        = $zabbix::params::agent_pidfile,
   $servicename                                    = $zabbix::params::agent_servicename,
-  Enum['console', 'file', 'system'] $logtype      = $zabbix::params::agent_logtype,
+  String $logtype                                 = $zabbix::params::agent_logtype,
   Optional[Stdlib::Absolutepath] $logfile         = $zabbix::params::agent_logfile,
   $logfilesize                                    = $zabbix::params::agent_logfilesize,
   $debuglevel                                     = $zabbix::params::agent_debuglevel,
   $sourceip                                       = $zabbix::params::agent_sourceip,
-  Optional[String[1]] $allowkey                   = $zabbix::params::agent_allowkey,
-  Optional[String[1]] $denykey                    = $zabbix::params::agent_denykey,
   $enableremotecommands                           = $zabbix::params::agent_enableremotecommands,
   $logremotecommands                              = $zabbix::params::agent_logremotecommands,
   $server                                         = $zabbix::params::agent_server,
@@ -335,16 +305,13 @@ class zabbix::agent (
   $tlsaccept                                      = $zabbix::params::agent_tlsaccept,
   $tlscafile                                      = $zabbix::params::agent_tlscafile,
   $tlscertfile                                    = $zabbix::params::agent_tlscertfile,
-  Optional[String[1]] $tlscipherall               = $zabbix::params::agent_tlscipherall,
-  Optional[String[1]] $tlscipherall13             = $zabbix::params::agent_tlscipherall13,
-  Optional[String[1]] $tlsciphercert              = $zabbix::params::agent_tlsciphercert,
-  Optional[String[1]] $tlsciphercert13            = $zabbix::params::agent_tlsciphercert13,
-  Optional[String[1]] $tlscipherpsk               = $zabbix::params::agent_tlscipherpsk,
-  Optional[String[1]] $tlscipherpsk13             = $zabbix::params::agent_tlscipherpsk13,
+  $tlscertissuer                                  = $zabbix::params::agent_tlscertissuer,
+  $tlscertsubject                                 = $zabbix::params::agent_tlscertsubject,
   $tlsconnect                                     = $zabbix::params::agent_tlsconnect,
   $tlscrlfile                                     = $zabbix::params::agent_tlscrlfile,
   $tlskeyfile                                     = $zabbix::params::agent_tlskeyfile,
   $tlspskfile                                     = $zabbix::params::agent_tlspskfile,
+  $tlspsk                                         = $zabbix::params::agent_tlspsk,
   $tlspskidentity                                 = $zabbix::params::agent_tlspskidentity,
   $tlsservercertissuer                            = $zabbix::params::agent_tlsservercertissuer,
   $tlsservercertsubject                           = $zabbix::params::agent_tlsservercertsubject,
@@ -356,15 +323,71 @@ class zabbix::agent (
   String $additional_service_params               = $zabbix::params::additional_service_params,
   String $service_type                            = $zabbix::params::service_type,
   Boolean $manage_startup_script                  = $zabbix::params::manage_startup_script,
+  Optional[Boolean] $purge_templates              = $zabbix::params::agent_purge_templates,
 ) inherits zabbix::params {
+
+  # the following two codeblocks are a bit blargh. The correct default value for
+  # $real_additional_service_params and $type changes based on the value of $zabbix_version
+  # We handle this in the params.pp, but that doesn't work if somebody provides a specific
+  # value for $zabbix_version and overwrites our default :(
+  # the codeblocks set defaults for both variables if $zabbix_version got provided,
+  # but only if the variables aren't provided.
+
+  if $zabbix_version != $zabbix::params::zabbix_version and $additional_service_params == $zabbix::params::additional_service_params {
+    $real_additional_service_params = versioncmp($zabbix_version, '3.0') ? {
+      1  => '--foreground',
+      0  => '--foreground',
+      -1 => '',
+    }
+  } else {
+    $real_additional_service_params = $additional_service_params
+  }
+  if $zabbix_version != $zabbix::params::zabbix_version and $service_type == $zabbix::params::service_type {
+    $real_service_type = versioncmp($zabbix_version, '3.0') ? {
+      1  => 'simple',
+      0  => 'simple',
+      -1 => 'forking',
+    }
+  } else {
+    $real_service_type = $service_type
+  }
+
   # Find if listenip is set. If not, we can set to specific ip or
   # to network name. If more than 1 interfaces are available, we
   # can find the ipaddress of this specific interface if listenip
   # is set to for example "eth1" or "bond0.73".
-  $listen_ip = $listenip ? {
-    /^(e|lo|bond|lxc|tap|tun|virbr).*/ => fact("networking.interfaces.${listenip}.ip"),
-    '*' => undef,
-    default => $listenip,
+  $listen_array = flatten([$listenip])
+  $listen_ips = $listen_array.map |$listenip| {
+    $listenip ? {
+      /^(e|lo|bond|lxc|tap|tun|virbr).*/ => fact("networking.interfaces.${listenip}.ip"),
+      '*' => undef,
+      default => $listenip,
+    }
+  }
+  $listen_ip = join($listen_ips,',')
+
+
+  # If the user specified a psk but no file we will use the default filename.
+  # If only the file is specified we configure it.
+  # If neither file nor psk is specified nothing is configured.
+  if $tlspsk and ! $tlspskfile {
+    $real_tlspskfile = $zabbix::params::default_pskfile_path
+  }else{
+    $real_tlspskfile = $tlspskfile
+  }
+
+  # Ensure the content of the psk file
+  if $real_tlspskfile and $tlspsk {
+    file { $real_tlspskfile:
+      ensure  => file,
+      owner   => $agent_config_owner,
+      group   => $agent_config_group,
+      mode    => '0440',
+      notify  => Service[$servicename],
+      require => Package[$zabbix_package_agent],
+      replace => true,
+      content => $tlspsk,
+    }
   }
 
   # So if manage_resources is set to true, we can send some data
@@ -396,16 +419,22 @@ class zabbix::agent (
     $_hostname = pick($hostname, $facts['networking']['fqdn'])
 
     class { 'zabbix::resources::agent':
-      hostname      => $_hostname,
-      ipaddress     => $listen_ip,
-      use_ip        => $agent_use_ip,
-      port          => $listenport,
-      groups        => [$groups].flatten(),
-      group_create  => $zbx_group_create,
-      templates     => $zbx_templates,
-      macros        => $zbx_macros,
-      interfacetype => $zbx_interface_type,
-      proxy         => $use_proxy,
+      hostname         => $_hostname,
+      ipaddress        => $listen_ips[0],
+      use_ip           => $agent_use_ip,
+      port             => $listenport,
+      groups           => [$groups].flatten(),
+      group_create     => $zbx_group_create,
+      templates        => $zbx_templates,
+      macros           => $zbx_macros,
+      proxy            => $use_proxy,
+      tls_accept       => $tlsaccept,
+      tls_connect      => $tlsconnect,
+      tls_issuer       => $tlscertissuer,
+      tls_subject      => $tlscertsubject,
+      tls_psk_identity => $tlspskidentity,
+      tls_psk          => $tlspsk,
+      purge_templates  => $purge_templates,
     }
   }
 
@@ -430,18 +459,18 @@ class zabbix::agent (
       ensure   => $zabbix_package_state,
       require  => Class['zabbix::repo'],
       tag      => 'zabbix',
-      provider => $zabbix_package_provider,
+      provider =>  $zabbix_package_provider,
     }
   }
 
   # Ensure that the correct config file is used.
   if $manage_startup_script {
-    zabbix::startup { $servicename:
+    zabbix::startup {$servicename:
       pidfile                   => $pidfile,
       agent_configfile_path     => $agent_configfile_path,
       zabbix_user               => $zabbix_user,
-      additional_service_params => $additional_service_params,
-      service_type              => $service_type,
+      additional_service_params => $real_additional_service_params,
+      service_type              => $real_service_type,
       service_name              => 'zabbix-agent',
       require                   => Package[$zabbix_package_agent],
     }
@@ -455,19 +484,24 @@ class zabbix::agent (
   }
 
   # Controlling the 'zabbix-agent' service
-  service { $servicename:
-    ensure  => $service_ensure,
-    enable  => $service_enable,
-    require => Package[$zabbix_package_agent],
+  if str2bool(getvar('::systemd')) {
+    $service_provider = 'systemd'
+    $service_path = undef
+  } elsif $facts['os']['name'] == 'AIX' {
+    $service_provider = 'init'
+    $service_path = '/etc/rc.d/init.d'
+  } else {
+    $service_provider = undef
+    $service_path = undef
   }
-
-  # Override the service provider on AIX
-  # Doing it this way allows overriding it on other platforms
-  if $facts['os']['name'] == 'AIX' {
-    Service[$servicename] {
-      service_provider => 'init',
-      service_path     => '/etc/rc.d/init.d',
-    }
+  service { $servicename:
+    ensure     => $service_ensure,
+    enable     => $service_enable,
+    path       => $service_path,
+    provider   => $service_provider,
+    hasstatus  => true,
+    hasrestart => true,
+    require    => Package[$zabbix_package_agent],
   }
 
   # Configuring the zabbix-agent configuration file
@@ -505,15 +539,14 @@ class zabbix::agent (
         state  => [
           'NEW',
           'RELATED',
-          'ESTABLISHED',
-        ],
+          'ESTABLISHED'],
       }
     }
   }
   # the agent doesn't work perfectly fine with selinux
   # https://support.zabbix.com/browse/ZBX-11631
   if fact('os.selinux.enabled') == true and $manage_selinux {
-    selinux::module { 'zabbix-agent':
+    selinux::module{'zabbix-agent':
       ensure     => 'present',
       content_te => template('zabbix/selinux/zabbix-agent.te.erb'),
       before     => Service[$servicename],

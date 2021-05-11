@@ -338,15 +338,6 @@ zabbix::template { 'Template App MySQL':
 }
 ```
 
-`zabbix::template` class accepts `zabbix_version` parameter, by default is set to module's default Zabbix version.
-Please override if you are using a different version.
-```ruby
-zabbix::template { 'Template App MySQL':
-  templ_source   => 'puppet:///modules/zabbix/MySQL.xml',
-  zabbix_version => '5.2'
-}
-```
-
 ## Zabbix Upgrades
 
 It is possible to do upgrades via this module. An example for the zabbix agent:
@@ -409,7 +400,7 @@ class{'zabbix::agent':
 There are some overall parameters which exists on all of the classes:
 * `zabbix_version`: You can specify which zabbix release needs to be installed. Default is '3.0'.
 * `manage_firewall`: Wheter you want to manage the firewall. If true, iptables will be configured to allow communications to zabbix ports. (Default: False)
-* `manage_repo`:  If zabbix needs to be installed from the zabbix repositories (Default is true). When you have your own repositories, you'll set this to false. But you'll have to make sure that your repository is installed on the host.
+* `manage_repo`:  If zabbix needs to be installed from the zabbix repositories (Default is true). When you have your own repositories, you'll set this to false. But you'll have to make sure that your repositorie is installed on the host.
 
 The following is only availabe for the following classes: zabbix::web, zabbix::proxy & zabbix::agent
 * `manage_resources`: As of release 0.4.0, when this parameter is set to true (Default is false) it make use of exported resources. You'll have an puppetdb configured before you can use this option. Information from the zabbix::agent, zabbix::proxy and zabbix::userparameters are able to export resources, which will be loaded on the zabbix::server.
@@ -441,10 +432,6 @@ This is the class for installing everything on a single host and thus all parame
 * `ldap_cacert`: The location of the CA Cert to be used for Zabbix LDAP authentication. The module will not install this file so it must be present on the system.
 * `ldap_clientcrt`: The location of the Client Cert to be used for Zabbix LDAP authentication. The module will not install this file so it must be present on the system.
 * `ldap_clientkey`: The location of the Client Key to be used for Zabbix LDAP authentication. The module will not install this file so it must be present on the system.
-* `saml_sp_key`: The location of the SAML Service Provider Key file. The module will not install this file so it must be present on the system.
-* `saml_sp_cert`: The location of the SAML Service Provider Certificate. The module will not install this file so it must be present on the system.
-* `saml_idp_cert`: The location of the SAML Identity Provider Certificate. The module will not install this file so it must be present on the system.
-* `saml_settings`: A hash (ruby style) of additional SAML SSO settings as described in the [Zabbix Documentation](https://www.zabbix.com/documentation/current/manual/web_interface/frontend_sections/administration/authentication#advanced_settings)
 
 There are some more zabbix specific parameters, please check them by opening the manifest file.
 
@@ -459,8 +446,6 @@ There are some more zabbix specific parameters, please check them by opening the
 
 ### Reference zabbix-agent
 * `server`: This is the ipaddress of the zabbix-server or zabbix-proxy.
-* `allowkey`: Allows execution of item keys matching pattern.
-* `denykey`: Deny execution of items keys matching pattern.
 * `tlsaccept`: What incoming connections to accept from Zabbix server. Used for a passive proxy, ignored on an active proxy.
 * `tlscafile`: Full pathname of a file containing the top-level CA(s) certificates for peer certificate verification.
 * `tlscertfile`: Full pathname of a file containing the proxy certificate or certificate chain.
@@ -475,8 +460,7 @@ There are some more zabbix specific parameters, please check them by opening the
 The following parameters is only needed when `manage_resources` is set to true:
 * `monitored_by_proxy`: When an agent is monitored via an proxy, enter the name of the proxy. The name is found in the webinterface via: Administration -> DM. If it isn't monitored by an proxy or `manage_resources` is false, this parameter can be empty.
 * `agent_use_ip`: Default is set to true. Zabbix server (or proxy) will connect to this host via ip instead of fqdn. When set to false, it will connect via fqdn.
-* `zbx_groups`: An array of hostgroups where this host needs to be added. Default (Array): 'Linux servers'
-* `zbx_group_create`: Default is set to true. Creates the Host Groups in Zabbix when they do not exist yet. When set to false you have to make sure the Host Group exists in Zabbix
+* `zbx_group`: Name of the hostgroup on which the agent will be installed. There can only be one hostgroup defined and should exists in the webinterface. Default: Linux servers
 * `zbx_templates`: Name of the templates which will be assigned when agent is installed. Default (Array): 'Template OS Linux', 'Template App SSH Service'
 
 There are some more zabbix specific parameters, please check them by opening the manifest file.
@@ -518,14 +502,51 @@ There are some zabbix specific parameters, please check them by opening the mani
 
 * `templ_name`: The name of the template. This name will be found in the Web interface.
 * `templ_source`: The location of the XML file wich needs to be imported.
-* `zabbix_version`: The Zabbix version on which the template will be installed on.
 
 ## Limitations
+The module is only supported on the following operating systems:
 
-This module supports Zabbix 4.0, 5.0 and 5.2. The upstream supported versions are documented [here](https://www.zabbix.com/de/life_cycle_and_release_policy)
-Please have a look into the metadata.json for all supported operating systems.
+Zabbix 3.0:
 
-This module is supported on both the community and the Enterprise version of Puppet.
+  * CentOS 7.x
+  * Amazon 7.x
+  * RedHat 7.x
+  * OracleLinux 7.x
+  * Scientific Linux 7.x
+  * Ubuntu 14.04
+  * Debian 8
+
+Zabbix 2.4:
+
+  * CentOS 6.x, 7.x
+  * Amazon 6.x, 7.x
+  * RedHat 6.x, 7.x
+  * OracleLinux 6.x, 7.x
+  * Scientific Linux 6.x, 7.x
+  * Ubuntu 12.04 14.04
+  * Debian 7
+
+Zabbix 2.2:
+
+  * CentOS 5.x, 6.x
+  * RedHat 5.x, 6.x
+  * OracleLinux 5.x, 6.x
+  * Scientific Linux 5.x, 6.x
+  * Ubuntu 12.04
+  * Debian 7
+  * xenserver 6
+
+Zabbix 2.0:
+
+  * CentOS 5.x, 6.x
+  * RedHat 5.x, 6.x
+  * OracleLinux 5.x, 6.x
+  * Scientific Linux 5.x, 6.x
+  * Ubuntu 12.04
+  * Debian 6, 7
+  * xenserver 6
+
+This module is supported on both the community as the Enterprise version of Puppet.
 
 Please be aware, that when manage_resources is enabled, it can increase an puppet run on the zabbix-server a lot when you have a lot of hosts.
 

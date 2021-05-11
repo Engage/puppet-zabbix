@@ -24,7 +24,13 @@ class zabbix::resources::agent (
   $templates               = undef,
   $macros                  = undef,
   $proxy                   = undef,
-  $interfacetype           = 1,
+  $tls_connect             = undef,
+  $tls_accept              = undef,
+  $tls_issuer              = undef,
+  $tls_subject             = undef,
+  $tls_psk_identity        = undef,
+  $tls_psk                 = undef,
+  $purge_templates         = undef,
 ) {
   if $group and $groups {
     fail("Got group and groups. This isn't support! Please use groups only.")
@@ -38,14 +44,20 @@ class zabbix::resources::agent (
   }
 
   @@zabbix_host { $hostname:
-    ipaddress     => $ipaddress,
-    use_ip        => $use_ip,
-    port          => $port,
-    groups        => $_groups,
-    group_create  => $group_create,
-    templates     => $templates,
-    macros        => $macros,
-    proxy         => $proxy,
-    interfacetype => $interfacetype,
+    ipaddress        => $ipaddress,
+    use_ip           => $use_ip,
+    port             => $port,
+    groups           => $_groups,
+    group_create     => $group_create,
+    templates        => $templates,
+    macros           => $macros,
+    proxy            => $proxy,
+    tls_connect      => $tls_connect,
+    tls_accept       => $tls_accept,
+    tls_issuer       => $tls_issuer,
+    tls_subject      => $tls_subject,
+    tls_psk_identity => $tls_psk_identity,
+    tls_psk          => $tls_psk,
+    purge_templates  => $purge_templates,
   }
 }
