@@ -671,3 +671,66 @@ LoadModulePath=<%= @loadmodulepath %>
 # WebServiceURL=
 <% if @webserviceurl %>WebServiceURL=<%= @webserviceurl -%><% end %>
 <% end %>
+
+<% if @zabbix_version.to_f >= 6.0 %>
+### Option: ServiceManagerSyncFrequency
+#	How often Zabbix will synchronize configuration of a service manager (in seconds).
+#
+# Mandatory: no
+# Range: 1-3600
+# Default:
+# ServiceManagerSyncFrequency=60
+<% if @servicemanagersyncfrequency %>servicemanagersyncfrequency=<%= @servicemanagersyncfrequency -%><% end %>
+
+### Option: ProblemHousekeepingFrequency
+#	How often Zabbix will delete problems for deleted triggers (in seconds).
+#
+# Mandatory: no
+# Range: 1-3600
+# Default:
+# ProblemHousekeepingFrequency=60
+<% if @problemhousekeepingfrequency %>oroblemhousekeepingfrequency=<%= @oroblemhousekeepingfrequency -%><% end %>
+
+
+## Option: StartODBCPollers
+#	Number of pre-forked ODBC poller instances.
+#
+# Mandatory: no
+# Range: 0-1000
+# Default:
+# StartODBCPollers=1
+<% if @startodbcpollers %>startodbcpollers=<%= @startodbcpollers -%><% end %>
+
+
+####### For advanced users - TCP-related fine-tuning parameters #######
+
+## Option: ListenBacklog
+#       The maximum number of pending connections in the queue. This parameter is passed to
+#       listen() function as argument 'backlog' (see "man listen").
+#
+# Mandatory: no
+# Range: 0 - INT_MAX (depends on system, too large values may be silently truncated to implementation-specified maximum)
+# Default: SOMAXCONN (hard-coded constant, depends on system)
+# ListenBacklog=
+
+
+####### High availability cluster parameters #######
+
+## Option: HANodeName
+#	The high availability cluster node name.
+#	When empty, server is working in standalone mode; a node with empty name is registered with address for the frontend to connect to.
+#
+# Mandatory: no
+# Default: 
+# HANodeName=
+
+## Option: NodeAddress
+#	IP or hostname with optional port to specify how frontend should connect to the server.
+#	Format: <address>[:port]
+#
+#	This option can be overridden by address specified in frontend configuration.
+#
+# Mandatory: no
+# Default: 
+# NodeAddress=localhost:10051
+<% end %> 

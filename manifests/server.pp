@@ -272,9 +272,12 @@ class zabbix::server (
   Boolean $manage_startup_script                                              = $zabbix::params::manage_startup_script,
   Optional[Stdlib::Absolutepath] $socketdir                                   = $zabbix::params::server_socketdir,
   Optional[Stdlib::HTTPUrl] $webserviceurl                                    = undef,
+  Optional[Integer[1, 3600]] $servicemanagersyncfrequency                     = undef,
+  Optional[Integer[1, 3600]] $problemhousekeepingfrequency                    = undef,
+  Optional[Integer[1, 10-0]] $startodbcpollers                                = undef,
   String  $zabbix_site                                                        = $zabbix::params::zabbix_site,
 ) inherits zabbix::params {
-  # zabbix server 5.2 and 5.4 is not supported on RHEL 7.
+  # zabbix server 5.2, 5.4 and 6.0 is not supported on RHEL 7.
   # https://www.zabbix.com/documentation/current/manual/installation/install_from_packages/rhel_centos
   if $facts['os']['family'] == 'RedHat' and versioncmp($zabbix_version, '5.2') >= 0 {
     if versioncmp($facts['os']['release']['major'], '7') == 0 {
@@ -296,7 +299,7 @@ class zabbix::server (
     }
   }
 
-  if versioncmp($zabbix_version, '5.4') == 0 {
+  if versioncmp($zabbix_version, '5.4') >= 0 {
     package { 'zabbix-sql-scripts':
       ensure  => present,
       require => Class['zabbix::repo'],
@@ -310,8 +313,8 @@ class zabbix::server (
     'postgresql' : {
       $db = 'pgsql'
 
-      # Zabbix version 5.4 uses zabbix-sql-scripts for initializing the database.
-      if versioncmp($zabbix_version, '5.4') == 0 {
+      # Zabbix version >= 5.4 uses zabbix-sql-scripts for initializing the database.
+      if versioncmp($zabbix_version, '5.4') >= 0 {
         $zabbix_database_require = [Package["zabbix-server-${db}"], Package['zabbix-sql-scripts']]
       } else {
         $zabbix_database_require = Package["zabbix-server-${db}"]
@@ -336,8 +339,8 @@ class zabbix::server (
     'mysql' : {
       $db = 'mysql'
 
-      # Zabbix version 5.4 uses zabbix-sql-scripts for initializing the database.
-      if versioncmp($zabbix_version, '5.4') == 0 {
+      # Zabbix version >= 5.4 uses zabbix-sql-scripts for initializing the database.
+      if versioncmp($zabbix_version, '5.4') >= 0 {
         $zabbix_database_require = [Package["zabbix-server-${db}"], Package['zabbix-sql-scripts']]
       } else {
         $zabbix_database_require = Package["zabbix-server-${db}"]

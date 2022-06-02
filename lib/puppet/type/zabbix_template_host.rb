@@ -2,8 +2,8 @@
 
 Puppet::Type.newtype(:zabbix_template_host) do
   @doc = <<-DOC
-    Link or Unlink template to host.
-	  Example.
+  Link or Unlink template to host. Only for Zabbix < 6.0!
+  Example.
 	  Name should be in the format of "template_name@hostname"
 
 	  zabbix_template_host{ 'mysql_template@db1':
