@@ -234,6 +234,20 @@ class zabbix::agent (
     default => $listenip,
   }
 
+
+  if $facts['zabbix_psk_configured'] {
+    $psk_configured = true
+  }
+  else {
+    $psk_configured = false
+    file { '/etc/zabbix/.encryption_configured':
+      ensure => file,
+      mode   => '0600',
+      owner  => 'zabbix',
+      group  => 'zabbix',
+    }
+  }
+
   # Ensure the content of the psk file
   if $tlspskfile and $tlspsk {
     file { $tlspskfile:
@@ -292,6 +306,7 @@ class zabbix::agent (
       tls_connect      => $tlsconnect,
       tls_psk_identity => $tlspskidentity,
       tls_psk          => $tlspsk,
+      psk_configured   => $psk_configured,
     }
   }
 

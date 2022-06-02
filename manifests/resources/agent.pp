@@ -27,6 +27,7 @@ class zabbix::resources::agent (
   $tls_psk_identity                   = undef,
   $tls_psk                            = undef,
   $interfacetype                      = 1,
+  $psk_configured                     = undef,
   Variant[Array, Hash] $interfacedetails = [],
 ) {
   if $group and $groups {
@@ -39,21 +40,40 @@ class zabbix::resources::agent (
       $_groups = $groups
     }
   }
-
-  @@zabbix_host { $hostname:
-    ipaddress        => $ipaddress,
-    use_ip           => $use_ip,
-    port             => $port,
-    groups           => $_groups,
-    group_create     => $group_create,
-    templates        => $templates,
-    macros           => $macros,
-    proxy            => $proxy,
-    interfacetype    => $interfacetype,
-    interfacedetails => $interfacedetails,
-    tls_connect      => $tls_connect,
-    tls_accept       => $tls_accept,
-    tls_psk_identity => $tls_psk_identity,
-    tls_psk          => $tls_psk,
+  if $psk_configured {
+  #If file exists, create zabbix_host resource without psk values
+    @@zabbix_host { $hostname:
+      ipaddress        => $ipaddress,
+      use_ip           => $use_ip,
+      port             => $port,
+      groups           => $_groups,
+      group_create     => $group_create,
+      templates        => $templates,
+      macros           => $macros,
+      proxy            => $proxy,
+      interfacetype    => $interfacetype,
+      interfacedetails => $interfacedetails,
+      tls_connect      => $tls_connect,
+      tls_accept       => $tls_accept,
+    }
+}
+#Else, create file, and create zabbix_host resource with psk values
+  else{
+    @@zabbix_host { $hostname:
+      ipaddress        => $ipaddress,
+      use_ip           => $use_ip,
+      port             => $port,
+      groups           => $_groups,
+      group_create     => $group_create,
+      templates        => $templates,
+      macros           => $macros,
+      proxy            => $proxy,
+      interfacetype    => $interfacetype,
+      interfacedetails => $interfacedetails,
+      tls_connect      => $tls_connect,
+      tls_accept       => $tls_accept,
+      tls_psk_identity => $tls_psk_identity,
+      tls_psk          => $tls_psk,
+    }
   }
 }
