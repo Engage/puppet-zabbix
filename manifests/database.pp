@@ -81,6 +81,7 @@ class zabbix::database (
   $database_host_ip                = $zabbix::params::server_database_host_ip,
   $database_charset                = $zabbix::params::server_database_charset,
   $database_collate                = $zabbix::params::server_database_collate,
+  $manage_database_access          = false,
   Optional[String[1]] $database_tablespace = $zabbix::params::server_database_tablespace,
 ) inherits zabbix::params {
   # So lets create the databases and load all files. This can only be
@@ -119,7 +120,7 @@ class zabbix::database (
         # access the database from the network. Postgresql allows this via the
         # pg_hba.conf file. As this file only accepts ip addresses, the ip address
         # of server and web has to be supplied as an parameter.
-        if $zabbix_web_ip != $zabbix_server_ip {
+        if $zabbix_web_ip != $zabbix_server_ip and $manage_database_access{
           postgresql::server::pg_hba_rule { 'Allow zabbix-web to access database':
             description => 'Open up postgresql for access from zabbix-web',
             type        => 'host',
@@ -132,7 +133,7 @@ class zabbix::database (
 
         # This is some specific action for the zabbix-proxy. This is due to better
         # parameter naming.
-        if $zabbix_type == 'proxy' {
+        if $zabbix_type == 'proxy'  and $manage_database_access{
           postgresql::server::pg_hba_rule { 'Allow zabbix-proxy to access database':
             description => 'Open up postgresql for access from zabbix-proxy',
             type        => 'host',
@@ -150,7 +151,7 @@ class zabbix::database (
         # as it may be confusing when you need to fill in the zabbix-proxy name into the
         # zabbix_server parameter. These are 2 different things. So we need to use an
         # if statement for this.
-        if $zabbix_type == 'server' {
+        if $zabbix_type == 'server'  and $manage_database_access{
           mysql::db { $database_name:
             user     => $database_user,
             password => $database_password,
@@ -163,7 +164,7 @@ class zabbix::database (
         }
 
         # And the proxy part.
-        if $zabbix_type == 'proxy' {
+        if $zabbix_type == 'proxy'  and $manage_database_access{
           mysql::db { $database_name:
             user     => $database_user,
             password => $database_password,

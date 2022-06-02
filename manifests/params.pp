@@ -159,6 +159,7 @@ class zabbix::params {
   $database_path                            = '/usr/sbin'
   $database_schema_path                     = false
   $database_type                            = 'postgresql'
+  $manage_database_access                   = true
   $apache_php_always_populate_raw_post_data = '-1'
   $apache_php_max_execution_time            = '300'
   $apache_php_max_input_time                = '300'
