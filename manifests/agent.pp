@@ -205,6 +205,7 @@ class zabbix::agent (
   $tlscrlfile                                          = $zabbix::params::agent_tlscrlfile,
   $tlskeyfile                                          = $zabbix::params::agent_tlskeyfile,
   $tlspskfile                                          = $zabbix::params::agent_tlspskfile,
+  $tlspsk                                              = $zabbix::params::agent_tlspsk,
   $tlspskidentity                                      = $zabbix::params::agent_tlspskidentity,
   $tlsservercertissuer                                 = $zabbix::params::agent_tlsservercertissuer,
   $tlsservercertsubject                                = $zabbix::params::agent_tlsservercertsubject,
@@ -231,6 +232,20 @@ class zabbix::agent (
     /^(e|lo|bond|lxc|tap|tun|virbr).*/ => fact("networking.interfaces.${listenip}.ip"),
     '*' => undef,
     default => $listenip,
+  }
+
+  # Ensure the content of the psk file
+  if $tlspskfile and $tlspsk {
+    file { $tlspskfile:
+      ensure  => file,
+      owner   => $agent_config_owner,
+      group   => $agent_config_group,
+      mode    => '0440',
+      notify  => Service[$servicename],
+      require => Package[$zabbix_package_agent],
+      replace => true,
+      content => $tlspsk,
+    }
   }
 
   # So if manage_resources is set to true, we can send some data
@@ -273,6 +288,10 @@ class zabbix::agent (
       interfacetype    => $zbx_interface_type,
       interfacedetails => $zbx_interface_details,
       proxy            => $use_proxy,
+      tls_accept       => $tlsaccept,
+      tls_connect      => $tlsconnect,
+      tls_psk_identity => $tlspskidentity,
+      tls_psk          => $tlspsk,
     }
   }
 

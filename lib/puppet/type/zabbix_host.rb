@@ -27,6 +27,19 @@ Puppet::Type.newtype(:zabbix_host) do
     end
   end
 
+  def munge_encryption(value)
+    case value
+    when 1, 'none', :none
+      1
+    when 2, 'psk', :psk
+      2
+    when 4, 'cert', :cert
+      4
+    else
+      raise(Puppet::Error, 'munge_encryption only takes none, psk or cert')
+    end
+  end
+
   newparam(:hostname, namevar: true) do
     desc 'FQDN of the machine.'
   end
@@ -121,6 +134,36 @@ Puppet::Type.newtype(:zabbix_host) do
 
   newproperty(:proxy) do
     desc 'Whether it is monitored by an proxy or not.'
+  end
+
+  newproperty(:tls_connect) do
+    desc 'Connections to host.'
+    def insync?(is)
+      is.to_i == should.to_i
+    end
+
+    munge do |value|
+      @resource.munge_encryption(value)
+    end
+  end
+
+  newproperty(:tls_accept) do
+    desc 'Connections from host.'
+    def insync?(is)
+      is.to_i == should.to_i
+    end
+
+    munge do |value|
+      @resource.munge_encryption(value)
+    end
+  end
+
+  newproperty(:tls_psk) do
+    desc 'The PSK to connect to this host.'
+  end
+
+  newproperty(:tls_psk_identity) do
+    desc 'The PSK identity to identify this host.'
   end
 
   autorequire(:file) { '/etc/zabbix/api.conf' }

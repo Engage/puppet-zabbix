@@ -22,6 +22,10 @@ class zabbix::resources::agent (
   $templates                          = undef,
   $macros                             = undef,
   $proxy                              = undef,
+  $tls_connect                        = undef,
+  $tls_accept                         = undef,
+  $tls_psk_identity                   = undef,
+  $tls_psk                            = undef,
   $interfacetype                      = 1,
   Variant[Array, Hash] $interfacedetails = [],
 ) {
@@ -47,5 +51,9 @@ class zabbix::resources::agent (
     proxy            => $proxy,
     interfacetype    => $interfacetype,
     interfacedetails => $interfacedetails,
+    tls_connect      => $tls_connect,
+    tls_accept       => $tls_accept,
+    tls_psk_identity => $tls_psk_identity,
+    tls_psk          => $tls_psk,
   }
 }

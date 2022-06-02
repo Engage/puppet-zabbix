@@ -13,7 +13,7 @@ Puppet::Type.type(:zabbix_host).provide(:ruby, parent: Puppet::Provider::Zabbix)
         selectInterfaces: %w[interfaceid type main ip port useip details],
         selectGroups: ['name'],
         selectMacros: %w[macro value],
-        output: %w[host proxy_hostid]
+        output: %w[host proxy_hostid tls_accept tls_connect tls_psk tls_psk_identity]
       }
     )
 
@@ -38,7 +38,11 @@ Puppet::Type.type(:zabbix_host).provide(:ruby, parent: Puppet::Provider::Zabbix)
         macros: h['macros'].map { |macro| { macro['macro'] => macro['value'] } },
         proxy: proxy_select,
         interfacetype: interface['type'].to_i,
-        interfacedetails: interface['details']
+        interfacedetails: interface['details'],
+        tls_accept: h['tls_accept'].to_i,
+        tls_connect: h['tls_connect'].to_i,
+        tls_psk: h['tls_psk'],
+        tls_psk_identity: h['tls_psk_identity']
       )
     end
   end
@@ -59,7 +63,8 @@ Puppet::Type.type(:zabbix_host).provide(:ruby, parent: Puppet::Provider::Zabbix)
     groups = transform_to_array_hash('groupid', gids)
 
     proxy_hostid = @resource[:proxy].nil? || @resource[:proxy].empty? ? nil : zbx.proxies.get_id(host: @resource[:proxy])
-
+    tls_accept = @resource[:tls_accept].nil? ? 1 : @resource[:tls_accept] 
+    tls_connect = @resource[:tls_connect].nil? ? 1 : @resource[:tls_connect] 
     # Now we create the host
     zbx.hosts.create(
       host: @resource[:hostname],
@@ -76,6 +81,10 @@ Puppet::Type.type(:zabbix_host).provide(:ruby, parent: Puppet::Provider::Zabbix)
         }
       ],
       templates: templates,
+      tls_connect: tls_connect,
+      tls_accept: tls_accept,
+      tls_psk_identity: @resource[:tls_psk_identity],
+      tls_psk: @resource[:tls_psk],
       groups: groups
     )
   end

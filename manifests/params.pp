@@ -325,6 +325,7 @@ class zabbix::params {
   $agent_tlsconnect                         = undef
   $agent_tlscrlfile                         = undef
   $agent_tlskeyfile                         = undef
+  $agent_tlspsk                             = undef
   $agent_tlspskfile                         = undef
   $agent_tlscipherall                       = undef
   $agent_tlscipherall13                     = undef
