@@ -12,23 +12,24 @@
 # @param interfacetype Internally used identifier for the host interface.
 # @param interfacedetails Hash with interface details for SNMP when interface type is 2.
 class zabbix::resources::agent (
-  $hostname                           = undef,
-  $ipaddress                          = undef,
-  $use_ip                             = undef,
-  $port                               = undef,
-  $group                              = undef,
-  Array[String[1]] $groups            = undef,
-  $group_create                       = undef,
-  $templates                          = undef,
-  $macros                             = undef,
-  $proxy                              = undef,
-  $tls_connect                        = undef,
-  $tls_accept                         = undef,
-  $tls_psk_identity                   = undef,
-  $tls_psk                            = undef,
-  $interfacetype                      = 1,
-  $psk_configured                     = undef,
+  $hostname                              = undef,
+  $ipaddress                             = undef,
+  $use_ip                                = undef,
+  $port                                  = undef,
+  $group                                 = undef,
+  Array[String[1]] $groups               = undef,
+  $group_create                          = undef,
+  $templates                             = undef,
+  $macros                                = undef,
+  $proxy                                 = undef,
+  $tls_connect                           = undef,
+  $tls_accept                            = undef,
+  $tls_psk_identity                      = undef,
+  $tls_psk                               = undef,
+  $interfacetype                         = 1,
+  $psk_configured                        = undef,
   Variant[Array, Hash] $interfacedetails = [],
+  $zabbix_site                           = undef,
 ) {
   if $group and $groups {
     fail("Got group and groups. This isn't support! Please use groups only.")
@@ -55,6 +56,7 @@ class zabbix::resources::agent (
       interfacedetails => $interfacedetails,
       tls_connect      => $tls_connect,
       tls_accept       => $tls_accept,
+      tag              => $zabbix_site,
     }
 }
 #Else, create file, and create zabbix_host resource with psk values
@@ -74,6 +76,7 @@ class zabbix::resources::agent (
       tls_accept       => $tls_accept,
       tls_psk_identity => $tls_psk_identity,
       tls_psk          => $tls_psk,
+      tag              => $zabbix_site,
     }
   }
 }

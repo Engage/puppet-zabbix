@@ -136,6 +136,7 @@ class zabbix::params {
     default   => true,
   }
 
+  $zabbix_site                              = undef
   $zabbix_package_state                     = 'present'
   $zabbix_proxy                             = 'localhost'
   $zabbix_proxy_ip                          = '127.0.0.1'

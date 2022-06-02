@@ -217,6 +217,7 @@ class zabbix::agent (
   String $additional_service_params                    = $zabbix::params::additional_service_params,
   String $service_type                                 = $zabbix::params::service_type,
   Boolean $manage_startup_script                       = $zabbix::params::manage_startup_script,
+  String  $zabbix_site                                 = $zabbix::params::zabbix_site,
 ) inherits zabbix::params {
   if $facts['os']['family'] == 'Debian' and versioncmp($facts['os']['release']['major'], '11') == 0 {
     if versioncmp($zabbix_version, '5.2') == 0 {
@@ -307,6 +308,7 @@ class zabbix::agent (
       tls_psk_identity => $tlspskidentity,
       tls_psk          => $tlspsk,
       psk_configured   => $psk_configured,
+      zabbix_site      => $zabbix_site,
     }
   }
 

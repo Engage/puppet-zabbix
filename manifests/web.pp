@@ -142,6 +142,7 @@ class zabbix::web (
   Hash[String[1], Variant[ScalarData, Hash]] $saml_settings           = $zabbix::params::saml_settings,
   $puppetgem                                                          = $zabbix::params::puppetgem,
   Boolean $manage_selinux                                             = $zabbix::params::manage_selinux,
+  String  $zabbix_site                                                = $zabbix::params::zabbix_site,
 ) inherits zabbix::params {
   # check osfamily, Arch is currently not supported for web
   if $facts['os']['family'] in ['Archlinux', 'Gentoo',] {
@@ -221,6 +222,7 @@ class zabbix::web (
       zabbix_user    => $zabbix_api_user,
       zabbix_pass    => $zabbix_api_pass,
       apache_use_ssl => $apache_use_ssl,
+      zabbix_site    => $zabbix_site,
     }
   }
 

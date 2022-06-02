@@ -8,6 +8,8 @@ class zabbix::resources::web (
   String[1] $zabbix_user,
   String[1] $zabbix_pass,
   Boolean   $apache_use_ssl,
+  String[1] $zabbix_site,
+
 ) {
   file { '/etc/zabbix/api.conf':
     ensure  => file,
@@ -31,7 +33,7 @@ class zabbix::resources::web (
       File['/etc/zabbix/api.conf'],
     ],
   }
-  -> Zabbix_template <<| |>>
-  -> Zabbix_host <<| |>>
-  -> Zabbix_userparameters <<| |>>
+  -> Zabbix_template <<| tag == $zabbix_site |>>
+  -> Zabbix_host <<| tag == $zabbix_site |>>
+  -> Zabbix_userparameters <<| tag == $zabbix_site |>>
 }
