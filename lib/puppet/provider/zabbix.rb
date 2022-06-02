@@ -51,7 +51,7 @@ class Puppet::Provider::Zabbix < Puppet::Provider
     ZabbixApi.connect(
       url: "#{protocol}://#{api_config['default']['zabbix_url']}/api_jsonrpc.php",
       user: api_config['default']['zabbix_user'],
-      password: api_config['default']['zabbix_pass'],
+      password: "#{api_config['default']['zabbix_pass']}",
       http_user: api_config['default']['zabbix_user'],
       http_password: api_config['default']['zabbix_pass'],
       ignore_version: true
