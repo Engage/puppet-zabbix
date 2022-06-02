@@ -348,21 +348,31 @@ class zabbix::agent (
     }
   }
 
-  # Ensure that the correct config file is used.
+  # Ensure that the correct startup file is used.
   if $manage_startup_script {
+    $service_name = $servicename ? {
+      /agent2/ => 'zabbix-agent2',
+      default  => 'zabbix-agent',
+    }
     zabbix::startup { $servicename:
       pidfile                   => $pidfile,
       agent_configfile_path     => $agent_configfile_path,
       zabbix_user               => $zabbix_user,
       additional_service_params => $additional_service_params,
       service_type              => $service_type,
-      service_name              => 'zabbix-agent',
+      service_name              => $service_name,
       require                   => Package[$zabbix_package_agent],
     }
   }
-
+  # Remove unused config files
   if $agent_configfile_path != '/etc/zabbix/zabbix_agentd.conf' and $facts['kernel'] != 'windows' {
     file { '/etc/zabbix/zabbix_agentd.conf':
+      ensure  => absent,
+      require => Package[$zabbix_package_agent],
+    }
+  }
+  elsif $agent_configfile_path != '/etc/zabbix/zabbix_agent2.conf' and $facts['kernel'] != 'windows' {
+    file { '/etc/zabbix/zabbix_agent2.conf':
       ensure  => absent,
       require => Package[$zabbix_package_agent],
     }
@@ -389,7 +399,10 @@ class zabbix::agent (
     }
   }
 
-  # Configuring the zabbix-agent configuration file
+  $config_content = $servicename ? {
+    /agent2/ => epp('zabbix/zabbix_agent2.conf.epp'),
+    default  => template('zabbix/zabbix_agentd.conf.erb'),
+  }
   file { $agent_configfile_path:
     ensure  => file,
     owner   => $agent_config_owner,
@@ -398,7 +411,7 @@ class zabbix::agent (
     notify  => Service[$servicename],
     require => Package[$zabbix_package_agent],
     replace => true,
-    content => template('zabbix/zabbix_agentd.conf.erb'),
+    content => $config_content,
   }
 
   # Include dir for specific zabbix-agent checks.

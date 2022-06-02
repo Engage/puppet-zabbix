@@ -131,11 +131,7 @@ class zabbix::params {
     $zabbix_version = '5.0'
   }
 
-  $manage_startup_script = downcase($facts['kernel']) ? {
-    'windows' => false,
-    default   => true,
-  }
-
+  $manage_startup_script                    = false
   $zabbix_site                              = undef
   $zabbix_package_state                     = 'present'
   $zabbix_proxy                             = 'localhost'
