@@ -423,6 +423,7 @@ class zabbix::agent (
     purge   => $include_dir_purge,
     notify  => Service[$servicename],
     require => File[$agent_configfile_path],
+    force   => true,
   }
 
   # Manage firewall
